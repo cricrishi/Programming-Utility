@@ -15,6 +15,9 @@ type column struct {
 	Type       string
 	Nullable   string
 	DbName     string
+	JsonName   string
+	TagStart   string
+	TagEnd     string
 }
 
 var db *sql.DB
@@ -63,6 +66,7 @@ func main() {
 	usr := flag.String("u", "root", "DB user name")
 	pwd := flag.String("p", "", "DB password")
 	db_name := flag.String("d", "test", "DB name")
+	jsonRequired := flag.String("j", "false", "jsonRequired")
 	flag.Parse()
 	conn := *usr + ":" + *pwd + "@tcp(127.0.0.1:3306)/" + *db_name
 	var err error
@@ -74,12 +78,12 @@ func main() {
 		}
 	}
 
-	generateModel(*table_name)
+	generateModel(*table_name, *jsonRequired)
 
 }
 
 //function for generating golang struct
-func generateModel(table_name string) {
+func generateModel(table_name string, jsonRequired string) {
 	err, columns := getColumns(table_name)
 	if err != nil {
 		return
@@ -89,7 +93,12 @@ func generateModel(table_name string) {
 	depth := 1
 	fmt.Print("type " + table_name + " struct {\n")
 	for _, v := range columns {
-		fmt.Print(tab(depth) + v.ColumnName + " " + v.Type + " " + v.DbName)
+		row := tab(depth) + v.ColumnName + " " + v.Type + " " + v.TagStart + v.DbName
+		if jsonRequired == "true" {
+			row += v.JsonName
+		}
+		row += v.TagEnd
+		fmt.Print(row)
 		fmt.Print("\n")
 	}
 	fmt.Print(tab(depth-1) + "}\n")
@@ -117,10 +126,13 @@ func getColumns(table string) (errr error, columns []column) {
 			return err, nil
 		}
 
-		col.DbName = strings.ToLower(col.ColumnName)
+		DbName1 := strings.ToLower(col.ColumnName)
 		col.ColumnName = camelCase(col.ColumnName)
 		col.Type = go_mysql_typemap[col.Type]
-		col.DbName = fmt.Sprintf("`db:\"%s\"`", col.DbName)
+		col.DbName = fmt.Sprintf("db:\"%s\"", DbName1)
+		col.JsonName = fmt.Sprintf(" json:\"%s\"", DbName1)
+		col.TagStart = "`"
+		col.TagEnd = "`"
 		columns = append(columns, col)
 	}
 	return err, columns
