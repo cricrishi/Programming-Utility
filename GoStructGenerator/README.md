@@ -5,6 +5,7 @@ This creates go lang structs for a mysql table, along with its db column name .
 #How it works? 
 Run following in the command line (at the location of this file) 
 
+
 `go run go-struct-generator.go -u=root -p=12345 -d=test_db -t=contacts`
 
 #Mandatory Parameters 
@@ -25,3 +26,20 @@ Examples:
     3. `go run go-struct-generator.go -u=root -p=12345 -d=test_db -t=contacts -j=true`
         
         json tags are generated.
+
+
+
+#Go Query Generator 
+What this does?
+Generates Select Query with all columns
+
+#How it works? 
+Run following in the command line (at the location of this file) 
+
+go run go-query-generator.go -u=root -p=pass -d=database -t=table 
+
+#Mandatory Parameters 
+1. `u` ==> username 
+2. `p` ==> password 
+3. `d` ==> Db name 
+4. `t` ==> table name
